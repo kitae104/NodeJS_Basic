@@ -1,4 +1,4 @@
-const {} = require('../module_test/var');
+const {odd, even} = require('../module_test/var');
 
 function checkOddOrEven(number) {
     if(number % 2){
@@ -8,4 +8,4 @@ function checkOddOrEven(number) {
     }
 }
 
-module.exports = checkOddOrEven;    // 하나만 모듈로 ㅁ나들때
+module.exports = checkOddOrEven;    // 하나만 모듈로 만들때
