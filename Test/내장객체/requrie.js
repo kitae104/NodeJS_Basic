@@ -1,2 +1,2 @@
-require('../module_test/var')
+require('../ch06/module_test/var')
 console.log(require);
