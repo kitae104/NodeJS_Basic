@@ -1,46 +1,28 @@
-// 가능한 윗쪽에 설정
 const dotenv = require('dotenv');
-dotenv.config();
-
 const express = require("express");
 const path = require('path');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const multer = require('multer');
-const fs = require('fs');
+const nunjucks = require('nunjucks');
+
+// 가능한 윗쪽에 설정
+dotenv.config();
 
 const indexRouter = require('./routes')
 const userRouter = require('./routes/user');
-
-// 파일 처리
-try{
-    fs.readdirSync('upload');
-} catch (error){
-    console.error('upload 폴더가 없어 새로 생성합니다.');
-    fs.mkdirSync('upload');
-};
-
-const upload = multer({
-    storage: multer.diskStorage({
-        destination(req, file, done){
-            done(null, 'uploads/')
-        },
-        filename(req, file, done){
-            const ext = path.extname(file.originalname);
-            done(null, path.basename(file.originalname, ext) + Date.now() + ext);
-        },
-    }),
-    limits: { fileSize: 5 * 1024 * 1024},
-});
 
 const app = express();
 
 app.set('port', process.env.PORT || 3000);      // 포트 설정 - 값 설정
 
 // 탬플릿 엔진
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.set('view engine', 'html');
+
+nunjucks.configure('views', {
+    express: app,
+    watch: true,
+});
 
 // 미들웨어 - 모든 요청시에 함께 사용 - 주소를 정할 수 있음
 // 미들웨어 간의 순서 중요함 - 내부적으로 next()를 수행함
@@ -67,44 +49,11 @@ app.use('/user', userRouter);
 
 app.use(express.json());                                      // json()
 app.use(express.urlencoded({extended:true}));      // form을 전달 받을 때 true면 qs 객체 사용
-app.use(multer().array());
-
 
 app.use((req, res, next) => {
    console.log("모든 요청에 수행...");
    next();
-}
-// , (req, res, next) => {
-//     try{
-//         throw new Error("에러 발생!");
-//     } catch(error){
-//         next(error);                    // 인수가 있는 경우 에러 처리로 이동
-//     }
-// }
-);
-
-// app.get('/', (req, res) => {
-//     // 쿠키 사용하기
-//     /*req.cookies;        // {mycookie: 'test'}
-//     req.signedCookies;  // 서명된 쿠키
-//     res.cookie('name', encodeURIComponent(name), {
-//         expires: new Date(),
-//         httpOnly: true,
-//         path: '/',
-//     });
-//     res.clearCookie('name', encodeURIComponent(name), {
-//        httpOnly: true,
-//        path: '/',
-//     });*/
-//
-//     //req.body.name;
-//
-//     res.sendFile(path.join(__dirname, 'index.html'));   // 현재 경로 + 파일
-//     // 한 라우터에서 여러개의 send가 사용되는 오류가 발생함.
-//     //res.send('안녕하세요.');
-//     //res.json({hello: 'kitae'});
-//     //next('route');                  // 값을 넣으면 다음 라우터로 이동
-// });
+});
 
 app.get('/', (req, res, next) => {
     console.log('GET / 요청에서만 실행됩니다.');
@@ -119,28 +68,21 @@ app.get("/about", (req, res) => {
    res.status(200).send("익스프레스 서버 수행중...");
 });
 
-app.get('/upload', (req, res) => {
-    res.sendFile(path.join(__dirname, 'multipart.html'));
-});
-
-app.post('/upload', upload.single('image'), (req, res) => {
-    console.log(req.file);
-    res.send('OK');
-})
-
 // 오류 처리
-app.use((err, req, res, next) => {
-    // res.send("404 오류 발생");
-    console.error(err);
-    res.status(404).send("Not Found");
-})
+app.use((req, res, next) => {
+    const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
+    error.status = 404;
+    next(error);
+});
 
 // 에러 처리 미들웨어는 반드시 4개의 매개변수를 사용해야 한다!!
 app.use((err, req, res, next) => {
-    console.error(err);
-    res.send("오류가 발생했습니다.");
+    res.locals.message = err.message;
+    res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 app.listen(app.get('port'), () => {
-    console.log('익스프레스 서버 실행!!');
+    console.log(app.get('port'), '번에서 익스프레스 서버 실행!!');
 });
