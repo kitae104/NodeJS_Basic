@@ -55,18 +55,18 @@ app.use((req, res, next) => {
    next();
 });
 
-app.get('/', (req, res, next) => {
-    console.log('GET / 요청에서만 실행됩니다.');
-    next();
-});
-
-app.get('/category/:name', (req, res) => {
-   res.send(`Hello ${req.params.name}`);
-});
-
-app.get("/about", (req, res) => {
-   res.status(200).send("익스프레스 서버 수행중...");
-});
+// app.get('/', (req, res, next) => {
+//     console.log('GET / 요청에서만 실행됩니다.');
+//     next();
+// });
+//
+// app.get('/category/:name', (req, res) => {
+//    res.send(`Hello ${req.params.name}`);
+// });
+//
+// app.get("/about", (req, res) => {
+//    res.status(200).send("익스프레스 서버 수행중...");
+// });
 
 // 오류 처리
 app.use((req, res, next) => {
