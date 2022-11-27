@@ -1,3 +1,7 @@
+// 가능한 윗쪽에 설정
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require("express");
 const path = require('path');
 const morgan = require('morgan');
@@ -6,6 +10,10 @@ const session = require('express-session');
 const multer = require('multer');
 const fs = require('fs');
 
+const indexRouter = require('./routes')
+const userRouter = require('./routes/user');
+
+// 파일 처리
 try{
     fs.readdirSync('upload');
 } catch (error){
@@ -30,6 +38,10 @@ const app = express();
 
 app.set('port', process.env.PORT || 3000);      // 포트 설정 - 값 설정
 
+// 탬플릿 엔진
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
 // 미들웨어 - 모든 요청시에 함께 사용 - 주소를 정할 수 있음
 // 미들웨어 간의 순서 중요함 - 내부적으로 next()를 수행함
 app.use(morgan('dev'));
@@ -38,11 +50,11 @@ app.use(morgan('dev'));
 // app.use('요청 경로', express.static('실제 경로'));
 app.use('/', express.static(path.join(__dirname, 'public')));
 
-app.use(cookieParser('kitaepassword'));             // 쿠키를 파싱하는 용도
+app.use(cookieParser(process.env.COOKIE_SECRET));             // 쿠키를 파싱하는 용도
 app.use(session({
     resave: false,
     saveUninitialized: false,
-    secret: 'kitaepassword',
+    secret: process.env.COOKIE_SECRET,
     cookie: {
         httpOnly: true,
         secure: false,
@@ -50,14 +62,8 @@ app.use(session({
     name: 'connect.sid',
 }));
 
-// 미들웨어 확장
-// app.use('/', (req, res, next) => {
-//     if(req.session.id){
-//         express.static(__dirname, 'public')(req, res, next)
-//     } else {
-//         next();
-//     }
-// })
+app.use('/', indexRouter)
+app.use('/user', userRouter);
 
 app.use(express.json());                                      // json()
 app.use(express.urlencoded({extended:true}));      // form을 전달 받을 때 true면 qs 객체 사용
@@ -126,7 +132,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 app.use((err, req, res, next) => {
     // res.send("404 오류 발생");
     console.error(err);
-    res.status(500).send(err.message);
+    res.status(404).send("Not Found");
 })
 
 // 에러 처리 미들웨어는 반드시 4개의 매개변수를 사용해야 한다!!
