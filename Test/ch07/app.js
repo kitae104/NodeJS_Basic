@@ -5,9 +5,9 @@ const nunjucks = require('nunjucks');   // HTML 탬플릿
 
 // 파일로 된 경로들
 const {sequelize} = require('./models');
-const indexRouter = require('./routes');
-const usersRouter = require('./routes/users');
-const commentsRouter = require('./routes/comments');
+//const indexRouter = require('./routes');
+//const usersRouter = require('./routes/users');
+//const commentsRouter = require('./routes/comments');
 
 const app = express();
 app.set('port', process.env.PORT || 3000);
@@ -34,9 +34,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({extended: false})); // 내장된 querystring모듈을 사용 true의 경우엔 qs모듈 사용
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/comments', commentsRouter);
+//app.use('/', indexRouter);
+//app.use('/users', usersRouter);
+//app.use('/comments', commentsRouter);
 
 app.use((req, res, next) => {
    const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
