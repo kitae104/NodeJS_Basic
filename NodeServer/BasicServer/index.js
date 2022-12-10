@@ -1,4 +1,8 @@
 const express = require("express");
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+
 
 // 1 익스프레스 
 const app = express();
