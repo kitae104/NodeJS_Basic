@@ -1,5 +1,4 @@
 //
-
 const express = require('express');
 const morgan = require('morgan');
 const axios = require('axios');
@@ -26,9 +25,8 @@ app.use(express.urlencoded({ extended: true}));
 //=============================================
 // 4 라우터 app.get(...)
 //=============================================
-app.get('/airkorea', async (req, res) => {
-  const serviceKey = "aIsRditBsUScVGImZFHmF9Ks8mcHAdsVw1Pt6dqB1Eoum2lh0CBnDUX3lDb0S608y61RBcdJTKwLKH%2Ft%2BXVlrg%3D%3D";
-  //const serviceKey = "일반 인증키";
+app.get('/airkorea', async (req, res) => {  
+  const serviceKey = "일반 인증키";
   const airUrl = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?";  
 
   let parmas = encodeURI('serviceKey') + '=' + serviceKey;

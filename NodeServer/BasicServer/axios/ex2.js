@@ -1,6 +1,12 @@
-const express = require("express");
+const path = require('path');
+const dotenv = require("dotenv");
+dotenv.config({path: path.resolve(__dirname, "../.env")})
+
 const morgan = require("morgan");
 const axios = require("axios");
+const express = require("express");
+
+
 
 //=============================================
 // 1 익스프레스 설정
@@ -10,7 +16,7 @@ const app = express();
 //=============================================
 // 2 포트 설정
 //=============================================
-app.set("port", process.env.PORT || 3000);
+app.set("port", process.env.PORT);
 
 //=============================================
 // 3 공통 미들웨어  app.use(...)
@@ -25,11 +31,8 @@ app.use(express.urlencoded({ extended: true }));
 // 4 라우터 app.get(...)
 //=============================================
 app.get("/airkorea", async (req, res) => {
-  const serviceKey =
-    "aIsRditBsUScVGImZFHmF9Ks8mcHAdsVw1Pt6dqB1Eoum2lh0CBnDUX3lDb0S608y61RBcdJTKwLKH%2Ft%2BXVlrg%3D%3D";
-  //const serviceKey = "일반 인증키";
-  const airUrl =
-    "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?";
+  const serviceKey = process.env.airServiceKey;     
+  const airUrl = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?";
 
   let parmas = encodeURI("serviceKey") + "=" + serviceKey;
   parmas += "&" + encodeURI("numOfRows") + "=" + encodeURI("1");
