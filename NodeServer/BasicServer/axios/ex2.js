@@ -6,8 +6,6 @@ const morgan = require("morgan");
 const axios = require("axios");
 const express = require("express");
 
-
-
 //=============================================
 // 1 익스프레스 설정
 //=============================================
