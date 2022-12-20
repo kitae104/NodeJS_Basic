@@ -17,4 +17,5 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true,  // 모델명을 단수, 테이블을 복수로 만드는데 복수로 만들지 않을 때 true
     timestamps: false
   });
+  return newPurchase;
 };
