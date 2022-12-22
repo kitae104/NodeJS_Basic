@@ -1,8 +1,7 @@
-const { WebSocketServer } = require('ws');
 const WebSocket = require('ws');
 
 module.exports = (server) => {
-  const wss = new WebSocketServer({server});
+  const wss = new WebSocket.Server({server});
 
   wss.on('connection', (ws, req) => {       // Connection 
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;

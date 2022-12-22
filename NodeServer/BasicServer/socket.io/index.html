@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket</title>
+  <!-- io 제공 스크립트 -->
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div>socket.io 모듈로 웹 소켓 사용</div>
+  <script>
+    const socket = io.connect("http://localhost:3000", {      // http 사용 
+      path: '/socket.io',
+      transports: ["websocket"], // polling 생략
+    }); 
+    
+    socket.on("from server", function(data) {   // 자체적으로 JSON 문자 받아와서 event.data 대신 data 사용 
+      // 이벤트 리스너, 여러개 할당 가능
+      console.log(data);
+      socket.emit("from client", "Message From Client");      // 이벤트 이름, 데이터
+    });
+  </script>
+</body>
+</html>

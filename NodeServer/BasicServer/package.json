@@ -24,6 +24,7 @@
     "redis": "^4.5.1",
     "sequelize": "^6.27.0",
     "sequelize-cli": "^6.5.2",
+    "socket.io": "^4.5.4",
     "uuid-apikey": "^1.5.3",
     "ws": "^8.11.0"
   }
