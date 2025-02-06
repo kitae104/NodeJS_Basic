@@ -8,6 +8,14 @@
 - npm install --save-dev nodemon
 - npm install --save body-parser(express로 대체)
 - npm install --save figlet
+- npm install --save express-validator
+- npm install --save mongoose
+- npm install --save dotenv
+- npm install --save uuid
+- npm install --save multer
 
 3. 실행 설정 
 - "start": "nodemon app.js"
+
+4. 윈도우 경로 확인 
+- const imageUrl = req.file.path.replace("\\" ,"/");
