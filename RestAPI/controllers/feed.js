@@ -5,15 +5,25 @@ const fs = require("fs"); // 파일 시스템
 const path = require("path"); // 경로
 
 const Post = require("../models/post"); // Post 모델 불러오기
-const post = require("../models/post");
 
 exports.getPosts = (req, res, next) => {
+
+  const currentPage = req.query.page || 1; // 현재 페이지
+  const perPage = 2; // 페이지당 게시물 수
+  let totalItems; // 전체 게시물 수
   Post.find() // Post 모델에서 모든 데이터 검색
-    .then((posts) => {
-      // 검색 결과가 있으면 반환
+    .countDocuments() // 전체 게시물 수
+    .then(count => {
+      totalItems = count; // 전체 게시물 수 
+      return Post.find() // Post 모델에서 모든 데이터 검색
+        .skip((currentPage - 1) * perPage) // 건너뛸 데이터 수
+        .limit(perPage); // 제한 데이터 수
+    })
+    .then((posts) => {   // 검색 결과가 있으면 반환
       res.status(200).json({
         message: "Fetched posts successfully.",
         posts: posts,
+        totalItems: totalItems
       });
     })
     .catch((err) => {
@@ -21,7 +31,7 @@ exports.getPosts = (req, res, next) => {
         err.statusCode = 500;
       }
       next(err); // 에러 핸들러로 전달
-    });
+    });  
 };
 
 exports.createPost = (req, res, next) => {
