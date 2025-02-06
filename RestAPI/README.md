@@ -13,6 +13,7 @@
 - npm install --save dotenv
 - npm install --save uuid
 - npm install --save multer
+- npm install --save bcryptjs
 
 3. 실행 설정 
 - "start": "nodemon app.js"
