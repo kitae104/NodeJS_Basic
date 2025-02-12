@@ -25,7 +25,7 @@ router.put("/signup", [
     .normalizeEmail(), // 이메일 주소 정규화
   body("password")
     .trim()
-    .isLength({ min: 5 }),
+    .isLength({ min: 3 }),
   body("name")
     .trim()
     .not()

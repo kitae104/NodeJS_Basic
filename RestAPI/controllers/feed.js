@@ -5,25 +5,26 @@ const fs = require("fs"); // 파일 시스템
 const path = require("path"); // 경로
 
 const Post = require("../models/post"); // Post 모델 불러오기
+const User = require("../models/user"); // User 모델 불러오기
 
 exports.getPosts = (req, res, next) => {
-
   const currentPage = req.query.page || 1; // 현재 페이지
   const perPage = 2; // 페이지당 게시물 수
   let totalItems; // 전체 게시물 수
   Post.find() // Post 모델에서 모든 데이터 검색
     .countDocuments() // 전체 게시물 수
-    .then(count => {
-      totalItems = count; // 전체 게시물 수 
+    .then((count) => {
+      totalItems = count; // 전체 게시물 수
       return Post.find() // Post 모델에서 모든 데이터 검색
         .skip((currentPage - 1) * perPage) // 건너뛸 데이터 수
         .limit(perPage); // 제한 데이터 수
     })
-    .then((posts) => {   // 검색 결과가 있으면 반환
+    .then((posts) => {
+      // 검색 결과가 있으면 반환
       res.status(200).json({
         message: "Fetched posts successfully.",
         posts: posts,
-        totalItems: totalItems
+        totalItems: totalItems,
       });
     })
     .catch((err) => {
@@ -31,12 +32,13 @@ exports.getPosts = (req, res, next) => {
         err.statusCode = 500;
       }
       next(err); // 에러 핸들러로 전달
-    });  
+    });
 };
 
 exports.createPost = (req, res, next) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req); // 검증 결과 확인
   if (!errors.isEmpty()) {
+    // 오류가 있으면
     const error = new Error("Validation failed, entered data is incorrect.");
     error.statusCode = 422;
     throw error;
@@ -50,24 +52,33 @@ exports.createPost = (req, res, next) => {
     throw error;
   }
 
+  const imageUrl = req.file.path.replace("\\", "/"); // 이미지 파일 경로
   const title = req.body.title;
   const content = req.body.content;
-  const imageUrl = req.file.path.replace("\\", "/"); // 이미지 파일 경로
+  let creator;
 
   const post = new Post({
     title: title,
     content: content,
     imageUrl: imageUrl, // 이미지 파일 경로
-    creator: { name: "Kitae" },
+    creator: req.userId, // 사용자 ID
   });
 
   post
     .save()
     .then((result) => {
-      console.log(result);
+      return User.findById(req.userId); // User 모델에서 사용자 ID로 검색
+    })
+    .then((user) => {
+      creator = user; // 사용자 정보
+      user.posts.push(post); // 게시물 추가
+      return user.save(); // 사용자 정보 저장
+    })
+    .then((result) => {
       res.status(201).json({
-        message: "Post created successfully!",
-        post: result,
+        message: "Post를 성공적으로 생성했습니다.!",
+        post: post,
+        creator: { _id: creator._id, name: creator.name },
       });
     })
     .catch((err) => {
@@ -118,7 +129,7 @@ exports.updatePost = (req, res, next) => {
   if (req.file) {
     imageUrl = req.file.path.replace("\\", "/"); // 이미지 파일 경로
   }
-  if (!imageUrl) {    
+  if (!imageUrl) {
     const error = new Error("No file picked.");
     error.statusCode = 422;
     throw error;
@@ -126,11 +137,19 @@ exports.updatePost = (req, res, next) => {
 
   Post.findById(postId) // Post 모델에서 postId로 검색
     .then((post) => {
-      if (!post) {   // 검색 결과가 없으면 에러 발생
-        const error = new Error("Could not find post.");
+      if (!post) {
+        // 검색 결과가 없으면 에러 발생
+        const error = new Error("포스트를 찾을 수 없습니다.ㄹ");
         error.statusCode = 404;
         throw error;
+      }     
+
+      if (post.creator.toString() !== req.userId) {        // 사용자 ID 확인
+        const error = new Error("인증되지 않았습니다!");
+        error.statusCode = 403;
+        throw error;
       }
+
       if (imageUrl !== post.imageUrl) {
         clearImage(post.imageUrl); // 기존 이미지 파일 삭제
       }
@@ -139,7 +158,8 @@ exports.updatePost = (req, res, next) => {
       post.content = content; // 내용
       return post.save(); // 저장
     })
-    .then((result) => { // 결과 반환    
+    .then((result) => {
+      // 결과 반환
       res.status(200).json({
         message: "Post updated!",
         post: result,
@@ -157,16 +177,30 @@ exports.deletePost = (req, res, next) => {
   const postId = req.params.postId; // URL 파라미터에서 postId 추출
   Post.findById(postId) // Post 모델에서 postId로 검색
     .then((post) => {
-      if (!post) { // 검색 결과가 없으면 에러 발생
+      if (!post) {
+        // 검색 결과가 없으면 에러 발생
         const error = new Error("Could not find post.");
         error.statusCode = 404;
         throw error;
       }
+
+      if (post.creator.toString() !== req.userId) {        // 사용자 ID 확인
+        const error = new Error("인증되지 않았습니다!");
+        error.statusCode = 403;
+        throw error;
+      }
+
       clearImage(post.imageUrl); // 이미지 파일 삭제
-      return Post.findByIdAndRemove(postId); // 삭제
+      return Post.findByIdAndDelete(postId); // 삭제
     })
-    .then((result) => { // 결과 반환
-      console.log(result);
+    .then((result) => {  
+      return User.findById(req.userId); // User 모델에서 사용자 ID로 검색
+    })
+    .then((user) => { 
+      user.posts.pull(postId); // 게시물 삭제
+      return user.save(); // 사용자 정보 저장
+    })
+    .then((result) => {
       res.status(200).json({ message: "Deleted post." });
     })
     .catch((err) => {
