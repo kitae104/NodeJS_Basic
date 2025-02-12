@@ -14,6 +14,7 @@
 - npm install --save uuid
 - npm install --save multer
 - npm install --save bcryptjs
+-  npm install --save jsonwebtoken
 
 3. 실행 설정 
 - "start": "nodemon app.js"
