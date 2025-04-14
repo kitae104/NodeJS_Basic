@@ -96,6 +96,10 @@ mongoose
     app.listen(PORT, () => {
       console.log(`http://localhost:${PORT}`);
     });
+    const io = require('socket.io')(server);  // Socket.IO 서버 생성
+    io.on('connection', (socket) => {
+      console.log('클라이언트 연결됨');
+    });
   })
   .catch((err) => {
     console.log(err);
